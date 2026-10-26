@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useReducer, useState } from 'react';
-import type { CartLine } from '@/lib/types';
+import type { CartLine, OrderMode } from '@/lib/types';
 import type { MenuItem } from '@/config/site.config';
 import { cartReducer, cartTotal, makeLineId } from '@/lib/cart';
 
@@ -9,6 +9,8 @@ type CartContextType = {
   total: number;
   table: string | null;
   setTable: (table: string | null) => void;
+  diningMode: OrderMode;
+  setDiningMode: (mode: OrderMode) => void;
   addItem: (
     item: MenuItem,
     addOns?: { name: string; price: number }[],
@@ -24,10 +26,12 @@ type CartContextType = {
 const CartContext = createContext<CartContextType | null>(null);
 
 const STORAGE_KEY = 'hacienda_cart_v1';
+const DINING_MODE_KEY = 'hacienda_dining_mode';
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [lines, dispatch] = useReducer(cartReducer, []);
   const [table, setTableState] = useState<string | null>(null);
+  const [diningMode, setDiningModeState] = useState<OrderMode>('table');
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Parse ?table= from URL on initial load and hydrate localStorage
@@ -37,10 +41,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const urlTable = searchParams.get('table');
       if (urlTable) {
         setTableState(urlTable);
+        setDiningModeState('table');
         sessionStorage.setItem('hacienda_table', urlTable);
       } else {
         const storedTable = sessionStorage.getItem('hacienda_table');
         if (storedTable) setTableState(storedTable);
+      }
+
+      const storedMode = sessionStorage.getItem(DINING_MODE_KEY) as OrderMode | null;
+      if (storedMode && ['table', 'pickup', 'delivery'].includes(storedMode)) {
+        setDiningModeState(storedMode);
       }
 
       const storedCart = localStorage.getItem(STORAGE_KEY);
@@ -106,8 +116,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setTableState(newTable);
     if (newTable) {
       sessionStorage.setItem('hacienda_table', newTable);
+      setDiningModeState('table');
     } else {
       sessionStorage.removeItem('hacienda_table');
+    }
+  };
+
+  const setDiningMode = (mode: OrderMode) => {
+    setDiningModeState(mode);
+    try {
+      sessionStorage.setItem(DINING_MODE_KEY, mode);
+    } catch {
+      // ignore
     }
   };
 
@@ -119,6 +139,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         total,
         table,
         setTable,
+        diningMode,
+        setDiningMode,
         addItem,
         decrement,
         remove,

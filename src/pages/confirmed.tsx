@@ -79,9 +79,18 @@ export function ConfirmedPage() {
                     <p className="mt-2 text-[#F3E9D2]">
                       Total: <strong className="font-mono text-[#C9A24B]">{formatKES(orderData.quote.total)}</strong>
                     </p>
-                    <p className="mt-1 text-[#F3E9D2]/65">
-                      Settlement: Pay server at table or on delivery (M-Pesa, Cash, Card)
-                    </p>
+                    {orderData.details.paymentStatus === 'completed' ? (
+                      <div className="mt-2 rounded border border-emerald-500/40 bg-emerald-950/30 p-2 text-[11px] text-emerald-300">
+                        <div className="font-semibold">✓ M-Pesa Online Payment Verified</div>
+                        <div className="font-mono text-[10px] text-emerald-400/80">
+                          Ref: {orderData.details.mpesaReceipt || 'Daraja Verified'} · Paybill 174379
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="mt-1 text-[#F3E9D2]/65">
+                        Settlement: Pay server at table or on delivery (M-Pesa, Cash, Card)
+                      </p>
+                    )}
                   </div>
                 </div>
 

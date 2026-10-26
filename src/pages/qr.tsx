@@ -1,22 +1,53 @@
 import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
-import { Download, Printer, QrCode, Check } from 'lucide-react';
+import { Download, Printer, QrCode, Check, ShieldCheck, ExternalLink, Copy, Globe, UtensilsCrossed } from 'lucide-react';
 import { siteConfig } from '@/config/site.config';
 import { SectionLabel } from '@/components/section-label';
 
 export function QRPage() {
   const [tableNumber, setTableNumber] = useState('1');
+  const [stationType, setStationType] = useState<'table' | 'banda'>('table');
+  const [targetDestination, setTargetDestination] = useState<'order' | 'menu'>('order');
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const currentOrigin =
-    typeof window !== 'undefined' ? window.location.origin : 'https://hacienda.ke';
+  // Compute public base origin:
+  // If running in development inside ais-dev-..., automatically route to the public ais-pre-... domain
+  // so scanning with a phone camera requires ZERO Google login or permission prompts.
+  const computeDefaultBase = () => {
+    if (typeof window === 'undefined') return 'https://hacienda.ke';
+    const origin = window.location.origin;
+    if (origin.includes('ais-dev-')) {
+      return origin.replace('ais-dev-', 'ais-pre-');
+    }
+    return origin;
+  };
 
-  const targetUrl = `${currentOrigin}/order?table=${tableNumber}`;
+  const [baseUrl, setBaseUrl] = useState(computeDefaultBase);
+  const [customHost, setCustomHost] = useState('');
+  const [selectedPreset, setSelectedPreset] = useState<'preview' | 'vercel' | 'custom'>('preview');
+
+  // Sync selected preset
+  const handlePresetChange = (preset: 'preview' | 'vercel' | 'custom') => {
+    setSelectedPreset(preset);
+    if (preset === 'preview') {
+      setBaseUrl(computeDefaultBase());
+    } else if (preset === 'vercel') {
+      setBaseUrl('https://hacienda-sports-bar.vercel.app');
+    } else if (preset === 'custom') {
+      setBaseUrl(customHost || 'https://hacienda.ke');
+    }
+  };
+
+  const activeStationLabel = stationType === 'table' ? `Table ${tableNumber}` : `Banda ${tableNumber}`;
+  const queryParam = stationType === 'table' ? tableNumber : `Banda-${tableNumber}`;
+  const pathSegment = targetDestination === 'order' ? 'order' : 'menu';
+  const targetUrl = `${baseUrl.replace(/\/$/, '')}/${pathSegment}?table=${encodeURIComponent(queryParam)}`;
 
   useEffect(() => {
     QRCode.toDataURL(targetUrl, {
-      width: 720,
+      width: 760,
       margin: 2,
       color: {
         dark: '#0D0B09',
@@ -32,7 +63,7 @@ export function QRPage() {
     if (!qrDataUrl) return;
     const a = document.createElement('a');
     a.href = qrDataUrl;
-    a.download = `hacienda-table-${tableNumber}-qr.png`;
+    a.download = `hacienda-${stationType}-${tableNumber}-qr.png`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -40,9 +71,22 @@ export function QRPage() {
     setTimeout(() => setDownloadSuccess(false), 2000);
   };
 
+  const copyUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(targetUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback
+    }
+  };
+
   const handlePrint = () => {
     window.print();
   };
+
+  const isPublicPreview = baseUrl.includes('ais-pre-');
+  const isPrivateDev = baseUrl.includes('ais-dev-');
 
   return (
     <div className="pt-[74px]">
@@ -53,16 +97,41 @@ export function QRPage() {
             Table Tent & Banda QR Codes
           </h1>
           <p className="mt-3 max-w-2xl text-xs sm:text-sm leading-relaxed text-[#F3E9D2]/65">
-            Generate high-resolution printable table tents for tables 1 through 30.
-            When a guest scans with their smartphone camera, their table number is
-            automatically locked in their cart for seamless kitchen routing.
+            Generate high-resolution printable table tents for tables 1 through 30 and private bandas.
+            Each code is linked to our public digital ordering station so guests can scan with any phone
+            camera to order and pay via M-Pesa immediately without authentication errors.
           </p>
+
+          {/* Access status alert */}
+          <div className="mt-6 flex flex-wrap items-center gap-3 border border-[#C9A24B]/35 bg-[#1F1510] p-4 text-xs">
+            <ShieldCheck className="h-5 w-5 shrink-0 text-[#C9A24B]" />
+            <div className="flex-1">
+              <span className="font-semibold text-[#F3E9D2]">Public Guest Access Verified: </span>
+              <span className="text-[#F3E9D2]/70">
+                {isPublicPreview ? (
+                  <>Codes are encoded with the public preview endpoint (<code>ais-pre-...</code>), allowing direct mobile scanning without requiring Google login.</>
+                ) : isPrivateDev ? (
+                  <span className="text-[#D9822B]">Notice: Switch to Public Preview or Vercel Domain below so mobile phone cameras do not hit private Google Cloud login.</span>
+                ) : (
+                  <>Encoded for production domain: <code>{baseUrl}</code></>
+                )}
+              </span>
+            </div>
+            <a
+              href={targetUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 border border-[#C9A24B]/40 bg-[#C9A24B]/10 px-3 py-1.5 font-mono text-[11px] text-[#C9A24B] hover:bg-[#C9A24B]/20"
+            >
+              Test Scan URL <ExternalLink size={12} />
+            </a>
+          </div>
         </div>
       </section>
 
       <section className="section-pad bg-[#0E0B09]">
         <div className="container-hacienda">
-          <div className="grid gap-12 lg:grid-cols-[1fr_380px]">
+          <div className="grid gap-12 lg:grid-cols-[1fr_420px]">
             {/* Left: The Printable A5 Tent Mockup */}
             <div className="print-sheet mx-auto w-full max-w-md border border-[#C9A24B]/35 bg-[#F3E9D2] p-8 sm:p-12 text-[#0D0B09] shadow-2xl">
               <div className="flex flex-col items-center text-center">
@@ -87,7 +156,7 @@ export function QRPage() {
                   {qrDataUrl ? (
                     <img
                       src={qrDataUrl}
-                      alt={`QR code for Table ${tableNumber} at Hacienda`}
+                      alt={`QR code for ${activeStationLabel} at Hacienda`}
                       className="h-56 w-56 sm:h-64 sm:w-64 object-contain"
                     />
                   ) : (
@@ -97,13 +166,13 @@ export function QRPage() {
                   )}
                 </div>
 
-                {/* Scan Headline & Table Callout */}
+                {/* Scan Headline & Station Callout */}
                 <h2 className="font-playfair mt-6 text-3xl font-semibold text-[#0D0B09]">
                   Scan to Order
                 </h2>
                 <div className="mt-2 border-y border-[#0D0B09]/30 py-1.5 px-6">
                   <span className="font-cinzel text-sm font-bold tracking-[0.2em] text-[#4A2E1F]">
-                    TABLE {tableNumber}
+                    {activeStationLabel.toUpperCase()}
                   </span>
                 </div>
 
@@ -111,75 +180,219 @@ export function QRPage() {
                   Browse live charcoal cuts & craft cocktails directly on your phone.
                 </p>
 
+                {/* Payment trust notice on tent */}
+                <div className="mt-3 flex items-center justify-center gap-2 text-[9px] font-semibold text-[#4A2E1F]/80">
+                  <span className="rounded bg-[#0D0B09]/10 px-2 py-0.5">Lipa Na M-Pesa (174379)</span>
+                  <span className="rounded bg-[#0D0B09]/10 px-2 py-0.5">Card</span>
+                  <span className="rounded bg-[#0D0B09]/10 px-2 py-0.5">Cash</span>
+                </div>
+
                 <div className="mt-6 text-[8px] uppercase tracking-[0.2em] text-[#4A2E1F]/60">
                   Ngara Road, Nairobi · Open 24 Hours
                 </div>
               </div>
             </div>
 
-            {/* Right: Controls & Table Selector */}
+            {/* Right: Controls & Host Selector */}
             <div className="no-print h-fit border border-[#C9A24B]/30 bg-[#140E0A] p-6 sm:p-8">
               <span className="eyebrow">Generator Controls</span>
               <h2 className="font-playfair mt-1 text-2xl text-[#F3E9D2]">
                 Configure Station
               </h2>
 
-              <div className="mt-6">
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#C9A24B]">
-                  Select Table Number (1 - 30)
-                </label>
-                <div className="mt-2 flex items-center gap-3">
-                  <input
-                    type="number"
-                    min={1}
-                    max={30}
-                    value={tableNumber}
-                    onChange={(e) => {
-                      const val = Math.max(1, Math.min(30, parseInt(e.target.value) || 1));
-                      setTableNumber(String(val));
-                    }}
-                    className="input-hacienda w-28 text-center font-mono text-base font-bold"
-                  />
-                  <span className="text-xs text-[#F3E9D2]/60">
-                    Station #{tableNumber}
-                  </span>
+              <div className="mt-6 space-y-5">
+                {/* 1. Host Domain Selector */}
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#C9A24B]">
+                    QR Destination Host Domain
+                  </label>
+                  <p className="mt-0.5 text-[10px] text-[#F3E9D2]/50">
+                    Determines what URL is encoded in the QR code for mobile scanners.
+                  </p>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handlePresetChange('preview')}
+                      className={`min-h-[44px] border px-2 text-[10px] font-bold uppercase tracking-wider transition ${
+                        selectedPreset === 'preview'
+                          ? 'border-[#C9A24B] bg-[#C9A24B] text-[#0D0B09]'
+                          : 'border-[#C9A24B]/20 bg-[#0D0B09]/60 text-[#F3E9D2]/70 hover:border-[#C9A24B]/40'
+                      }`}
+                    >
+                      Public Live
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePresetChange('vercel')}
+                      className={`min-h-[44px] border px-2 text-[10px] font-bold uppercase tracking-wider transition ${
+                        selectedPreset === 'vercel'
+                          ? 'border-[#C9A24B] bg-[#C9A24B] text-[#0D0B09]'
+                          : 'border-[#C9A24B]/20 bg-[#0D0B09]/60 text-[#F3E9D2]/70 hover:border-[#C9A24B]/40'
+                      }`}
+                    >
+                      Vercel App
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePresetChange('custom')}
+                      className={`min-h-[44px] border px-2 text-[10px] font-bold uppercase tracking-wider transition ${
+                        selectedPreset === 'custom'
+                          ? 'border-[#C9A24B] bg-[#C9A24B] text-[#0D0B09]'
+                          : 'border-[#C9A24B]/20 bg-[#0D0B09]/60 text-[#F3E9D2]/70 hover:border-[#C9A24B]/40'
+                      }`}
+                    >
+                      Custom URL
+                    </button>
+                  </div>
+
+                  {selectedPreset === 'custom' && (
+                    <input
+                      type="url"
+                      value={customHost}
+                      onChange={(e) => {
+                        setCustomHost(e.target.value);
+                        setBaseUrl(e.target.value);
+                      }}
+                      placeholder="https://yourdomain.com"
+                      className="input-hacienda mt-2 text-xs"
+                    />
+                  )}
                 </div>
 
-                {/* Quick Table Selection Grid */}
-                <div className="mt-4">
-                  <span className="text-[10px] uppercase tracking-wider text-[#F3E9D2]/45">
-                    Quick Pick Table:
-                  </span>
-                  <div className="mt-2 flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
-                    {Array.from({ length: 30 }, (_, i) => String(i + 1)).map((num) => (
+                {/* 2. Station Type & Destination */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#C9A24B]">
+                      Station Type
+                    </label>
+                    <div className="mt-1.5 flex gap-1 border border-[#C9A24B]/20 bg-[#0D0B09] p-1">
                       <button
-                        key={num}
                         type="button"
-                        onClick={() => setTableNumber(num)}
-                        className={`h-8 w-8 text-xs font-mono transition ${
-                          tableNumber === num
-                            ? 'bg-[#C9A24B] text-[#0D0B09] font-bold'
-                            : 'border border-[#C9A24B]/20 bg-[#0D0B09] text-[#F3E9D2]/70 hover:border-[#C9A24B]/50'
+                        onClick={() => setStationType('table')}
+                        className={`flex-1 py-1.5 text-center text-[10px] font-bold uppercase tracking-wider ${
+                          stationType === 'table' ? 'bg-[#C9A24B] text-[#0D0B09]' : 'text-[#F3E9D2]/60'
                         }`}
                       >
-                        {num}
+                        Table
                       </button>
-                    ))}
+                      <button
+                        type="button"
+                        onClick={() => setStationType('banda')}
+                        className={`flex-1 py-1.5 text-center text-[10px] font-bold uppercase tracking-wider ${
+                          stationType === 'banda' ? 'bg-[#C9A24B] text-[#0D0B09]' : 'text-[#F3E9D2]/60'
+                        }`}
+                      >
+                        Banda
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#C9A24B]">
+                      Landing Page
+                    </label>
+                    <div className="mt-1.5 flex gap-1 border border-[#C9A24B]/20 bg-[#0D0B09] p-1">
+                      <button
+                        type="button"
+                        onClick={() => setTargetDestination('order')}
+                        className={`flex-1 py-1.5 text-center text-[10px] font-bold uppercase tracking-wider ${
+                          targetDestination === 'order' ? 'bg-[#C9A24B] text-[#0D0B09]' : 'text-[#F3E9D2]/60'
+                        }`}
+                      >
+                        Order Station
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTargetDestination('menu')}
+                        className={`flex-1 py-1.5 text-center text-[10px] font-bold uppercase tracking-wider ${
+                          targetDestination === 'menu' ? 'bg-[#C9A24B] text-[#0D0B09]' : 'text-[#F3E9D2]/60'
+                        }`}
+                      >
+                        Menu Browse
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                {/* Target URL Preview */}
-                <div className="mt-6 border-t border-[#C9A24B]/20 pt-4">
-                  <span className="text-[10px] uppercase tracking-wider text-[#F3E9D2]/50">
-                    Encoded Destination URL:
-                  </span>
-                  <p className="mt-1 break-all font-mono text-[10px] text-[#C9A24B]">
+                {/* 3. Station Number Input */}
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#C9A24B]">
+                    {stationType === 'table' ? 'Table Number (1 - 30)' : 'Banda Number (1 - 5)'}
+                  </label>
+                  <div className="mt-2 flex items-center gap-3">
+                    <input
+                      type="number"
+                      min={1}
+                      max={stationType === 'table' ? 30 : 5}
+                      value={tableNumber}
+                      onChange={(e) => {
+                        const maxVal = stationType === 'table' ? 30 : 5;
+                        const val = Math.max(1, Math.min(maxVal, parseInt(e.target.value) || 1));
+                        setTableNumber(String(val));
+                      }}
+                      className="input-hacienda w-28 text-center font-mono text-base font-bold"
+                    />
+                    <span className="text-xs text-[#F3E9D2]/70">
+                      Generating: <strong className="text-[#C9A24B]">{activeStationLabel}</strong>
+                    </span>
+                  </div>
+
+                  {/* Quick Pick Buttons */}
+                  <div className="mt-3">
+                    <span className="text-[10px] uppercase tracking-wider text-[#F3E9D2]/45">
+                      Quick Pick:
+                    </span>
+                    <div className="mt-1.5 flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
+                      {Array.from(
+                        { length: stationType === 'table' ? 30 : 5 },
+                        (_, i) => String(i + 1)
+                      ).map((num) => (
+                        <button
+                          key={num}
+                          type="button"
+                          onClick={() => setTableNumber(num)}
+                          className={`h-8 w-8 text-xs font-mono transition ${
+                            tableNumber === num
+                              ? 'bg-[#C9A24B] text-[#0D0B09] font-bold'
+                              : 'border border-[#C9A24B]/20 bg-[#0D0B09] text-[#F3E9D2]/70 hover:border-[#C9A24B]/50'
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. Target URL Display with Copy and Test */}
+                <div className="border-t border-[#C9A24B]/20 pt-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] uppercase tracking-wider text-[#F3E9D2]/50">
+                      Scannable URL:
+                    </span>
+                    <button
+                      type="button"
+                      onClick={copyUrl}
+                      className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-[#C9A24B] hover:underline"
+                    >
+                      {copied ? (
+                        <>
+                          <Check size={11} /> Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={11} /> Copy Link
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <p className="mt-1 break-all rounded border border-[#C9A24B]/20 bg-[#0D0B09] p-2.5 font-mono text-[10px] text-[#C9A24B]">
                     {targetUrl}
                   </p>
                 </div>
 
                 {/* Actions */}
-                <div className="mt-6 space-y-3">
+                <div className="space-y-3 pt-2">
                   <button
                     type="button"
                     onClick={downloadPNG}
@@ -205,9 +418,8 @@ export function QRPage() {
                   </button>
                 </div>
 
-                <p className="mt-5 text-[10px] leading-relaxed text-[#F3E9D2]/40">
-                  Tip: Print directly onto A5 heavy cardstock or matte photo paper for the
-                  hacienda brass tabletop stands.
+                <p className="text-[10px] leading-relaxed text-[#F3E9D2]/40">
+                  Tip: Print directly onto A5 cardstock or matte photo paper for the brass tabletop tent stands.
                 </p>
               </div>
             </div>

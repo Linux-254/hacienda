@@ -1,6 +1,6 @@
 # Hacienda Sports Bar & Grill — Nairobi
 
-A luxury, old-money steakhouse and sports bar web platform with digital QR table ordering, WhatsApp kitchen dispatch, and authoritative server quote verification.
+A luxury, old-money steakhouse and sports bar web platform with digital QR table ordering, Safaricom Daraja M-Pesa STK Push integration, WhatsApp kitchen dispatch, and authoritative server quote verification.
 
 ---
 
@@ -8,7 +8,8 @@ A luxury, old-money steakhouse and sports bar web platform with digital QR table
 
 - **Framework:** React 19 + TypeScript + Vite + Express (full-stack server) + Tailwind CSS
 - **Design Language:** Modern old-money steakhouse: dark walnut, acacia charcoal heat, brass accents, Cormorant Garamond / Playfair Display editorial typography.
-- **Single Source of Truth:** `src/config/site.config.ts` controls all client information, menu items, prices, add-on pricing, event schedules, and photography.
+- **Single Source of Truth:** `src/config/site.config.ts` controls all client information, menu items, prices, add-on pricing, M-Pesa credentials, event schedules, and photography.
+- **Official Client Phone:** `0708 808 168` (local) / `254708808168` (international WhatsApp API)
 
 ```bash
 # Install dependencies
@@ -23,55 +24,65 @@ npm run build
 
 ---
 
-## 2. How to Edit Configuration & Prices
+## 2. Vercel Configuration & Routing Mapping
 
-All prices, client contact details, and menu items live in **`src/config/site.config.ts`**:
+The platform is designed to run seamlessly on Vercel with dedicated routes:
 
-1. **Changing Prices:**
-   - Locate the item under `siteConfig.menu`.
-   - Update `price: 1200` to the new figure in KES.
-   - For items with fluctuating market rates, use `priceLabel: 'Ask staff'`.
-2. **Editing Accompaniments & Vegetables:**
-   - Under `siteConfig.addOns.accompaniments` and `siteConfig.addOns.vegetables`, update the item names and prices.
-3. **Updating Phone & WhatsApp Number:**
-   - Change `phone: '07XX XXX XXX'` to the official front-of-house phone.
-   - Change `whatsapp: '2547XXXXXXXX'` to the official 12-digit international format WhatsApp line (e.g. `254712345678`).
-4. **Updating Match Day Fixtures & Events:**
-   - Edit `siteConfig.events` array with upcoming game details, times, and acoustic set schedules.
-5. **Today's Specials:**
-   - Populate `siteConfig.specials` array to showcase featured cuts.
+| Route Path | Experience | Purpose |
+| :--- | :--- | :--- |
+| **`/`** | **Main Brand Website** | Cinematic hero, grill story, sports screening fixtures, guest reviews, banda reservation inquiry, location & 24/7 hours. |
+| **`/menu`** | **Digital Menu Station** | Categorized food & drink catalog with 2-column mobile layout, live search, dietary/spice filters, and dish customization modal. |
+| **`/order`** | **Cart & Checkout Station** | Step-by-step cart review, dining method selection (`table`, `pickup`, `delivery`), M-Pesa STK Push payment, and WhatsApp dispatch. |
+| **`/order?table=N`** | **Direct Table QR Landing** | Automatically pre-locks Table `N` into the diner's cart with Dine-In mode selected. |
+| **`/menu?table=N`** | **Menu Browse QR Landing** | Opens the menu with Table `N` pinned for easy ordering. |
+| **`/qr`** | **QR Table Tent Generator** | Printable high-res A5 table tent sheets with scannable QR codes for Tables 1–30 and Bandas 1–5. Includes host domain switchers. |
+| **`/events`** | **Match Day & Music** | Premier League, Champions League, Rugby schedules, and weekend live acoustic sets. |
+| **`/about`** | **Heritage & Philosophy** | Charcoal grill techniques, local Kenyan meat sourcing, mixology standards. |
+| **`/info`** | **Location & Practicalities** | Google Maps directions, 24/7 hours, parking, accessibility, payment methods. |
+| **`/order/confirmed`**| **Order Confirmation** | Dispatched order receipt with verified totals and M-Pesa transaction reference. |
 
----
-
-## 3. QR Table Ordering System
-
-- Visit **`/qr`** to generate printable table tent cards for tables 1 through 30.
-- Each QR encodes the URL: `https://<domain>/order?table=N`.
-- When a diner scans the tent with their smartphone, their table number is automatically locked into the ordering station.
-- Staff can download high-resolution PNGs or click **"Print / Save PDF"** formatted for standard A5 acrylic tent stands.
+### Vercel Serverless Endpoints (`api/`)
+- **`/api/order/quote`**: Computes authoritative prices from the server catalog, ensuring clients cannot tamper with subtotals.
+- **`/api/mpesa/stkpush`**: Initiates Lipa Na M-Pesa Online STK Push via Safaricom Daraja Sandbox.
+- **`/api/mpesa/query/:id`**: Checks transaction status.
 
 ---
 
-## 4. WhatsApp Order Dispatch & Server Quotes
+## 3. QR Code Scanning & Access Resolution
 
-- When a guest reviews their cart and clicks **"Send Order via WhatsApp"**, the client sends the line items to `/api/order/quote`.
-- The server recalculates subtotals and grand totals strictly from the authoritative server catalog (preventing client-side price tampering).
-- The formatted order summary (Order ID, Table/Pickup, Itemized lines, Cooking styles, Sides, Verified Total, Guest Name & Phone) is formatted into WhatsApp URL syntax and opens directly on the guest's device.
-
----
-
-## 5. Phase 5 M-Pesa STK Push Integration (Deferred)
-
-As specified in the implementation brief, direct Safaricom Daraja Lipa Na M-Pesa Online STK Push is deferred to Phase 5. In this phase:
-- Payments are settled upon service at the table or upon delivery (Cash, M-Pesa Till/Paybill, or Credit Card).
-- When Phase 5 is triggered, the server endpoint `/api/mpesa/stkpush` and callback handler `/api/mpesa/callback` can be activated using official Daraja credentials.
+### Why phone scans reported "Didn't have access":
+- In Google Cloud Run / AI Studio dev mode, internal browser URLs start with `https://ais-dev-...`. These dev containers require an authorized Google login session, so phone cameras scanning that URL were prompted to log in.
+- The publicly accessible shareable domain for this applet is `https://ais-pre-3fnonwn7je3erecw633mdg-620457192074.europe-west2.run.app`. This URL requires **zero authentication** and works on any phone camera.
+- In `src/pages/qr.tsx`, the generator automatically resolves to `ais-pre-...` by default, and provides one-click switches for **Vercel Production Domain** and **Custom Domain (`hacienda.ke`)**.
 
 ---
 
-## 6. Placeholders & Honest Disclosures
+## 4. Safaricom Daraja M-Pesa STK Push Integration
 
-In accordance with our production checklist (no invented history, awards, or fake testimonials):
-- **Phone:** `07XX XXX XXX` (configured in `site.config.ts`)
-- **WhatsApp:** `2547XXXXXXXX` (configured in `site.config.ts`)
-- **TBC Items:** Soups, certain cocktails, and mocktails with seasonal market pricing are marked **"Ask staff"**.
-- **Imagery Note:** All food and cocktail visuals are illustrative, curated to represent East African steakhouse hospitality.
+The application integrates Lipa Na M-Pesa Online with credentials:
+- **App Name:** `hacienda`
+- **Short Code:** `174379`
+- **Consumer Key:** `whD7EzibRbuNkYLKuAfR1H8Yzug18AG0bm5yhqnA5CpcxzWO`
+- **Consumer Secret:** `2jtz8HVJAAQ0GGPEBvPIRkgweKOuuYgllhYVCFvxOq8LS8KgU6CmRnhm3pJakLNr`
+- **Passkey:** `bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919`
+- **Environment:** `Sandbox` (`https://sandbox.safaricom.co.ke`)
+
+### How the Demo Workflow Operates:
+1. Diner adds dishes to cart and proceeds to **`/order`**.
+2. Selects **"Lipa Na M-Pesa (STK Push to Phone)"**.
+3. Confirms Safaricom phone number (`0708 808 168` by default or custom).
+4. Clicks **"Send M-Pesa STK Push"**.
+5. Server calls Daraja `oauth/v1/generate` and `mpesa/stkpush/v1/processrequest`.
+6. Interactive pop-up dialog displays prompt status, paybill number (`174379`), and a 60s countdown.
+7. Includes an instant **"Demo: Simulate PIN Accepted"** button for pitch presentations.
+8. Once verified, generates official M-Pesa receipt format (`QKH97XR2B1`), marks order as `PAID`, and dispatches to WhatsApp with verified receipt attached.
+
+---
+
+## 5. Contact & Venue
+
+- **Venue:** Hacienda Sports Bar & Grill
+- **Location:** Ngara Rd, Nairobi, Kenya
+- **Phone:** `0708 808 168`
+- **WhatsApp:** `254708808168`
+- **Hours:** Open 24 Hours, 7 Days a week

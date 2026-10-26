@@ -12,6 +12,9 @@ export type CartLine = {
 
 export type OrderMode = 'table' | 'pickup' | 'delivery';
 
+export type PaymentMethod = 'mpesa' | 'pay_at_table';
+export type PaymentStatus = 'unpaid' | 'pending' | 'completed' | 'failed';
+
 export type CustomerDetails = {
   name: string;
   phone: string;
@@ -19,6 +22,9 @@ export type CustomerDetails = {
   table?: string;
   address?: string;
   notes?: string;
+  paymentMethod?: PaymentMethod;
+  paymentStatus?: PaymentStatus;
+  mpesaReceipt?: string;
 };
 
 export type QuoteItem = {
@@ -34,4 +40,19 @@ export type Quote = {
   subtotal: number;
   total: number;
   calculatedAt: string;
+  paymentMethod?: PaymentMethod;
+  paymentStatus?: PaymentStatus;
+  mpesaReceipt?: string;
 };
+
+export type MpesaSTKResponse = {
+  success: boolean;
+  checkoutRequestId?: string;
+  merchantRequestId?: string;
+  customerMessage?: string;
+  responseCode?: string;
+  responseDescription?: string;
+  isSandbox?: boolean;
+  error?: string;
+};
+

@@ -44,7 +44,9 @@ export const formatWhatsAppMessage = (quote: Quote, details: CustomerDetails) =>
     `*Phone:* ${details.phone}`,
     details.notes ? `*Special Request:* ${details.notes}` : '',
     '',
-    '• Payment: Pay at table / on delivery (Cash, M-Pesa, Card)',
+    details.paymentStatus === 'completed'
+      ? `• *PAYMENT STATUS: PAID (M-PESA ONLINE)*\n• M-Pesa Ref: ${details.mpesaReceipt || 'Daraja Verified'}\n• Shortcode: 174379 (Hacienda Bar)`
+      : `• *Payment Method:* Pay at table / on delivery (Cash, M-Pesa, Card)`,
     '• Time placed: ' + new Date().toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' }),
     '────────────────────',
     'Thank you for dining with Hacienda Sports Bar & Grill.',

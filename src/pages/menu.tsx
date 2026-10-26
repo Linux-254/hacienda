@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Search, SlidersHorizontal, ArrowRight, ShoppingBag } from 'lucide-react';
+import { Search, SlidersHorizontal, ArrowRight, Utensils, ShoppingBag, Truck } from 'lucide-react';
 import { formatKES, siteConfig, type MenuCategory, type MenuItem } from '@/config/site.config';
 import { SectionLabel } from '@/components/section-label';
 import { DishVisual } from '@/components/dish-visual';
 import { DishDetailModal } from '@/components/dish-detail-modal';
 import { useCart } from '@/components/cart-provider';
+import type { OrderMode } from '@/lib/types';
 
 const categories: MenuCategory[] = [
   'Main grill',
@@ -24,7 +25,7 @@ export function MenuPage() {
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
 
-  const { count, total } = useCart();
+  const { count, total, diningMode, setDiningMode, table } = useCart();
 
   const filteredItems = useMemo(() => {
     return siteConfig.menu.filter((item) => {
@@ -32,7 +33,6 @@ export function MenuPage() {
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-      // If user typed a search query, show all matching categories; otherwise filter by activeCategory
       if (searchQuery.trim().length > 0) {
         return matchesSearch;
       }
@@ -42,33 +42,32 @@ export function MenuPage() {
 
   return (
     <div className="pt-[74px]">
-      {/* Menu Header Hero */}
-      <section className="border-b border-[#C9A24B]/20 bg-[#120B08] py-14 sm:py-20">
+      {/* Menu Header */}
+      <section className="border-b border-[#C9A24B]/20 bg-[#120B08] py-10 sm:py-16">
         <div className="container-hacienda">
           <SectionLabel number="Menu">The Kitchen & The Bar</SectionLabel>
-          <div className="mt-4 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+          <div className="mt-3 flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
-              <h1 className="font-playfair text-4xl sm:text-5xl md:text-6xl text-[#F3E9D2]">
+              <h1 className="font-playfair text-3xl sm:text-4xl md:text-5xl text-[#F3E9D2]">
                 Our Daily Cuts & Pours
               </h1>
-              <p className="mt-3 max-w-xl text-xs sm:text-sm leading-relaxed text-[#F3E9D2]/65">
-                Every plate is roasted fresh over charcoal or shaken to order at the bar.
-                Tap any dish to select your cooking style, add hot accompaniments, and send
-                directly to your table.
+              <p className="mt-2 max-w-xl text-xs sm:text-sm leading-relaxed text-[#F3E9D2]/65">
+                Every plate is roasted fresh over charcoal or shaken to order. Tap any plate to
+                customize cooking style, accompaniments, and add to your table order.
               </p>
             </div>
 
             {/* Quick Search */}
-            <div className="w-full sm:w-80">
-              <div className="flex h-12 items-center border border-[#C9A24B]/30 bg-[#0D0B09]/80 px-4 focus-within:border-[#C9A24B]">
-                <Search size={16} className="text-[#C9A24B] shrink-0" />
+            <div className="w-full sm:w-72">
+              <div className="flex h-11 items-center border border-[#C9A24B]/30 bg-[#0D0B09]/80 px-3 focus-within:border-[#C9A24B]">
+                <Search size={15} className="text-[#C9A24B] shrink-0" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search cuts, wings, cocktails..."
+                  placeholder="Search cuts, wings, drinks..."
                   aria-label="Search menu items"
-                  className="w-full bg-transparent px-3 text-xs text-[#F3E9D2] outline-none placeholder:text-[#F3E9D2]/35"
+                  className="w-full bg-transparent px-2.5 text-xs text-[#F3E9D2] outline-none placeholder:text-[#F3E9D2]/35"
                 />
                 {searchQuery && (
                   <button
@@ -82,14 +81,54 @@ export function MenuPage() {
               </div>
             </div>
           </div>
+
+          {/* Dining Preference Mode Switcher Banner */}
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded border border-[#C9A24B]/25 bg-[#1A110D]/80 p-3 sm:px-5">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#C9A24B]">
+                Dining Preference:
+              </span>
+              {diningMode === 'table' && table && (
+                <span className="font-mono text-[10px] text-[#F3E9D2]/80">
+                  (Station: Table {table})
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {[
+                { id: 'table', label: 'Dine-In', icon: Utensils },
+                { id: 'pickup', label: 'Takeaway', icon: ShoppingBag },
+                { id: 'delivery', label: 'Delivery', icon: Truck },
+              ].map((m) => {
+                const Icon = m.icon;
+                const isSelected = diningMode === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setDiningMode(m.id as OrderMode)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition ${
+                      isSelected
+                        ? 'bg-[#C9A24B] text-[#0D0B09]'
+                        : 'border border-[#C9A24B]/20 text-[#F3E9D2]/70 hover:border-[#C9A24B]/40'
+                    }`}
+                  >
+                    <Icon size={12} />
+                    <span>{m.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Sticky Category Tabs */}
+      {/* Sticky Category Navigation */}
       <div className="sticky top-[74px] z-30 border-b border-[#C9A24B]/20 bg-[#0D0B09]/95 backdrop-blur-md">
-        <div className="container-hacienda overflow-x-auto py-3">
+        <div className="container-hacienda overflow-x-auto py-2.5">
           <div className="flex min-w-max items-center gap-2">
-            <SlidersHorizontal size={13} className="mr-2 text-[#C9A24B]/70" />
+            <SlidersHorizontal size={13} className="mr-1.5 text-[#C9A24B]/70" />
             {categories.map((cat) => {
               const isSelected = activeCategory === cat && !searchQuery;
               return (
@@ -100,10 +139,10 @@ export function MenuPage() {
                     setActiveCategory(cat);
                     setSearchQuery('');
                   }}
-                  className={`min-h-[38px] px-4 text-[10px] font-semibold uppercase tracking-[0.18em] transition ${
+                  className={`min-h-[36px] px-3.5 text-[10px] font-semibold uppercase tracking-[0.16em] transition ${
                     isSelected
                       ? 'border border-[#C9A24B] bg-[#C9A24B] text-[#0D0B09] font-bold'
-                      : 'border border-[#C9A24B]/20 bg-transparent text-[#F3E9D2]/60 hover:border-[#C9A24B]/50 hover:text-[#C9A24B]'
+                      : 'border border-[#C9A24B]/20 bg-transparent text-[#F3E9D2]/65 hover:border-[#C9A24B]/50 hover:text-[#C9A24B]'
                   }`}
                 >
                   {cat}
@@ -114,80 +153,77 @@ export function MenuPage() {
         </div>
       </div>
 
-      {/* Dishes Gallery */}
-      <section className="section-pad bg-[#0E0B09]">
+      {/* Dishes Section — Responsive 2-Columns on Mobile (<768px) with Signature Floating Effect */}
+      <section className="section-pad bg-[#0E0B09] py-10 sm:py-16">
         <div className="container-hacienda">
           {searchQuery && (
-            <div className="mb-8 flex items-center justify-between border-b border-[#C9A24B]/20 pb-4">
+            <div className="mb-6 flex items-center justify-between border-b border-[#C9A24B]/20 pb-3">
               <span className="text-xs text-[#F3E9D2]/70">
                 Search results for: <strong className="text-[#C9A24B]">"{searchQuery}"</strong>
               </span>
               <span className="font-mono text-xs text-[#C9A24B]">
-                {filteredItems.length} items found
+                {filteredItems.length} items
               </span>
             </div>
           )}
 
           {filteredItems.length === 0 ? (
-            <div className="border border-dashed border-[#C9A24B]/30 p-16 text-center">
-              <p className="font-cormorant text-2xl italic text-[#F3E9D2]/70">
-                No plates match your search criteria.
+            <div className="border border-dashed border-[#C9A24B]/30 p-12 text-center">
+              <p className="font-cormorant text-xl italic text-[#F3E9D2]/70">
+                No plates match your search in this section.
               </p>
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="button-gold mt-5 text-[10px]"
+                className="button-gold mt-4 text-[10px]"
               >
                 Reset Search
               </button>
             </div>
           ) : (
-            <div className="grid gap-x-12 gap-y-16 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredItems.map((item) => (
+            /* 2-Column Responsive CSS Grid (screens under 768px) with Signature Floating Dish Presentation */
+            <div className="menu-dish-grid">
+              {filteredItems.map((item, index) => (
                 <div
                   key={item.id}
-                  className="group relative flex flex-col justify-between border-b border-[#C9A24B]/20 pb-6 text-left"
+                  onClick={() => setSelectedItem(item)}
+                  className={`group relative flex flex-col justify-between text-left cursor-pointer border-b border-[#C9A24B]/15 pb-4 transition-transform duration-300 ${
+                    index % 2 === 1 ? 'md:translate-y-5' : ''
+                  }`}
                 >
                   <div>
-                    {/* Floating Plate / Glass */}
-                    <div
-                      onClick={() => setSelectedItem(item)}
-                      className="cursor-pointer"
-                    >
+                    {/* Floating Dish Visual Stage (Unboxed transparent cutout with soft ground shadow) */}
+                    <div className="relative mb-2.5">
                       <DishVisual
                         src={item.image}
-                        alt={`${item.name} illustrative food presentation`}
+                        alt={`${item.name} plated at Hacienda`}
                         label={item.name}
-                        size="medium"
+                        size="responsive"
                       />
                     </div>
 
-                    {/* Header: Title and Price */}
-                    <div className="mt-4 flex items-start justify-between gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedItem(item)}
-                        className="text-left font-playfair text-xl sm:text-2xl text-[#F3E9D2] transition group-hover:text-[#C9A24B]"
-                      >
+                    {/* Dish Title & Price */}
+                    <div className="flex flex-col gap-0.5 sm:flex-row sm:items-start sm:justify-between">
+                      <h3 className="font-playfair text-xs xs:text-sm sm:text-lg font-medium text-[#F3E9D2] line-clamp-1 group-hover:text-[#C9A24B] transition-colors">
                         {item.name}
-                      </button>
-                      <span className="shrink-0 pt-1 font-mono text-xs font-semibold text-[#C9A24B]">
+                      </h3>
+                      <span className="shrink-0 font-mono text-[11px] xs:text-xs sm:text-sm font-bold text-[#C9A24B]">
                         {item.price ? formatKES(item.price) : item.priceLabel}
                       </span>
                     </div>
 
-                    {/* Description */}
-                    <p className="mt-2 text-xs leading-relaxed text-[#F3E9D2]/60 line-clamp-3">
+                    {/* Concise Narrative Description */}
+                    <p className="mt-1 text-[10px] xs:text-[11px] sm:text-xs leading-relaxed text-[#F3E9D2]/60 line-clamp-2">
                       {item.description}
                     </p>
 
-                    {/* Tags */}
-                    {item.tags && (
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {item.tags.map((tag) => (
+                    {/* Tags (Desktop only to prevent clutter) */}
+                    {item.tags && item.tags.length > 0 && (
+                      <div className="mt-2 hidden sm:flex flex-wrap gap-1">
+                        {item.tags.slice(0, 2).map((tag) => (
                           <span
                             key={tag}
-                            className="border border-[#C9A24B]/15 bg-[#17100B] px-2 py-0.5 text-[9px] uppercase tracking-wider text-[#C9A24B]/75"
+                            className="border border-[#C9A24B]/15 bg-[#17100B] px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-[#C9A24B]/70"
                           >
                             {tag}
                           </span>
@@ -196,19 +232,13 @@ export function MenuPage() {
                     )}
                   </div>
 
-                  {/* Order / Inquire Button */}
-                  <div className="mt-6 flex items-center justify-between border-t border-[#C9A24B]/15 pt-4">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedItem(item)}
-                      className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-[#C9A24B] transition hover:text-[#DFBA67]"
-                    >
-                      <span>{item.price ? 'Customize & Order' : 'Ask Staff'}</span>
-                      <ArrowRight size={13} />
-                    </button>
-
+                  {/* Clean Editorial Action Trigger */}
+                  <div className="mt-3 flex items-center justify-between border-t border-[#C9A24B]/10 pt-2">
+                    <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.16em] text-[#C9A24B]/80 group-hover:text-[#C9A24B] transition-colors">
+                      {item.price ? 'Order this ↗' : 'Ask staff ↗'}
+                    </span>
                     {item.cookingStyles && (
-                      <span className="text-[10px] text-[#F3E9D2]/40">
+                      <span className="hidden sm:inline text-[9px] text-[#F3E9D2]/40">
                         {item.cookingStyles.length} styles
                       </span>
                     )}
@@ -220,40 +250,40 @@ export function MenuPage() {
         </div>
       </section>
 
-      {/* Floating Bottom Cart Bar if items in cart */}
+      {/* Floating Bottom Cart Bar */}
       {count > 0 && (
-        <div className="fixed bottom-6 inset-x-4 z-40 mx-auto max-w-lg">
+        <div className="fixed bottom-4 inset-x-3 z-40 mx-auto max-w-md">
           <Link
             to="/order"
-            className="flex items-center justify-between border border-[#C9A24B] bg-[#160E0A] px-5 py-3.5 shadow-2xl backdrop-blur-md transition hover:border-[#DFBA67] hover:bg-[#24160F]"
+            className="flex items-center justify-between border border-[#C9A24B] bg-[#160E0A] px-4 py-3 shadow-2xl backdrop-blur-md transition hover:bg-[#20140D]"
           >
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#C9A24B] text-[#0D0B09] font-bold text-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#C9A24B] text-[#0D0B09] font-bold text-xs">
                 {count}
               </div>
               <div>
                 <p className="text-xs font-semibold text-[#F3E9D2]">
                   Your Order Cart
                 </p>
-                <p className="text-[10px] text-[#F3E9D2]/50">
-                  Ready to review or send to kitchen
+                <p className="text-[9px] uppercase tracking-wider text-[#C9A24B]">
+                  {diningMode === 'table' ? `Table ${table || 'Dine-In'}` : diningMode === 'pickup' ? 'Takeaway' : 'Delivery'}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <span className="font-mono text-sm font-bold text-[#C9A24B]">
+            <div className="flex items-center gap-2.5">
+              <span className="font-mono text-xs sm:text-sm font-bold text-[#C9A24B]">
                 {formatKES(total)}
               </span>
-              <span className="button-gold min-h-[36px] px-3.5 text-[10px]">
-                Review <ArrowRight size={12} className="ml-1" />
+              <span className="button-gold min-h-[32px] px-3 text-[10px]">
+                Review <ArrowRight size={11} className="ml-1" />
               </span>
             </div>
           </Link>
         </div>
       )}
 
-      {/* Dish Detail & Customization Modal */}
+      {/* Customization Modal with Sticky Footer */}
       <DishDetailModal
         item={selectedItem}
         onClose={() => setSelectedItem(null)}
