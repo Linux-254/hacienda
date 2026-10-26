@@ -72,6 +72,7 @@ export async function getDarajaAccessToken(): Promise<string> {
     headers: {
       Authorization: `Basic ${auth}`,
     },
+    signal: AbortSignal.timeout(4000),
   });
 
   if (!res.ok) {
@@ -103,7 +104,7 @@ export async function initiateStkPush(params: {
   const normalizedPhone = normalizeMpesaPhone(params.phone);
   const timestamp = formatTimestamp();
   const password = Buffer.from(`${DARAJA_CONFIG.shortCode}${DARAJA_CONFIG.passkey}${timestamp}`).toString('base64');
-  const callbackUrl = params.callBackUrl || 'https://ais-pre-3fnonwn7je3erecw633mdg-620457192074.europe-west2.run.app/api/mpesa/callback';
+  const callbackUrl = params.callBackUrl || 'https://hacienda-nine.vercel.app/api/mpesa/callback';
   const ref = params.accountReference || 'Hacienda Bar';
 
   try {
@@ -129,6 +130,7 @@ export async function initiateStkPush(params: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(4500),
     });
 
     const data = (await res.json()) as {

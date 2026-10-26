@@ -12,31 +12,31 @@ export function QRPage() {
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const VERCEL_PRODUCTION_URL = 'https://hacienda-nine.vercel.app';
   const PUBLIC_PREVIEW_URL = 'https://ais-pre-3fnonwn7je3erecw633mdg-620457192074.europe-west2.run.app';
 
   // Compute public base origin:
-  // If running in development (localhost) or inside ais-dev-..., automatically route to the public ais-pre-... domain
-  // so scanning with a physical phone camera requires ZERO Google login and never fails with localhost connection errors.
+  // Defaults to production Vercel domain https://hacienda-nine.vercel.app so mobile cameras scan with zero login friction.
   const computeDefaultBase = () => {
-    if (typeof window === 'undefined') return PUBLIC_PREVIEW_URL;
+    if (typeof window === 'undefined') return VERCEL_PRODUCTION_URL;
     const origin = window.location.origin;
-    if (origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('ais-dev-')) {
-      return PUBLIC_PREVIEW_URL;
+    if (origin.includes('vercel.app')) {
+      return origin;
     }
-    return origin;
+    return VERCEL_PRODUCTION_URL;
   };
 
   const [baseUrl, setBaseUrl] = useState(computeDefaultBase);
   const [customHost, setCustomHost] = useState('');
-  const [selectedPreset, setSelectedPreset] = useState<'preview' | 'vercel' | 'custom'>('preview');
+  const [selectedPreset, setSelectedPreset] = useState<'vercel' | 'preview' | 'custom'>('vercel');
 
   // Sync selected preset
-  const handlePresetChange = (preset: 'preview' | 'vercel' | 'custom') => {
+  const handlePresetChange = (preset: 'vercel' | 'preview' | 'custom') => {
     setSelectedPreset(preset);
-    if (preset === 'preview') {
-      setBaseUrl(computeDefaultBase());
-    } else if (preset === 'vercel') {
-      setBaseUrl('https://hacienda-sports-bar.vercel.app');
+    if (preset === 'vercel') {
+      setBaseUrl(VERCEL_PRODUCTION_URL);
+    } else if (preset === 'preview') {
+      setBaseUrl(PUBLIC_PREVIEW_URL);
     } else if (preset === 'custom') {
       setBaseUrl(customHost || 'https://hacienda.ke');
     }
@@ -214,17 +214,6 @@ export function QRPage() {
                   <div className="mt-2 grid grid-cols-3 gap-2">
                     <button
                       type="button"
-                      onClick={() => handlePresetChange('preview')}
-                      className={`min-h-[44px] border px-2 text-[10px] font-bold uppercase tracking-wider transition ${
-                        selectedPreset === 'preview'
-                          ? 'border-[#C9A24B] bg-[#C9A24B] text-[#0D0B09]'
-                          : 'border-[#C9A24B]/20 bg-[#0D0B09]/60 text-[#F3E9D2]/70 hover:border-[#C9A24B]/40'
-                      }`}
-                    >
-                      Public Live
-                    </button>
-                    <button
-                      type="button"
                       onClick={() => handlePresetChange('vercel')}
                       className={`min-h-[44px] border px-2 text-[10px] font-bold uppercase tracking-wider transition ${
                         selectedPreset === 'vercel'
@@ -232,7 +221,18 @@ export function QRPage() {
                           : 'border-[#C9A24B]/20 bg-[#0D0B09]/60 text-[#F3E9D2]/70 hover:border-[#C9A24B]/40'
                       }`}
                     >
-                      Vercel App
+                      Vercel Live
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePresetChange('preview')}
+                      className={`min-h-[44px] border px-2 text-[10px] font-bold uppercase tracking-wider transition ${
+                        selectedPreset === 'preview'
+                          ? 'border-[#C9A24B] bg-[#C9A24B] text-[#0D0B09]'
+                          : 'border-[#C9A24B]/20 bg-[#0D0B09]/60 text-[#F3E9D2]/70 hover:border-[#C9A24B]/40'
+                      }`}
+                    >
+                      Preview Link
                     </button>
                     <button
                       type="button"

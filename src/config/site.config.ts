@@ -24,6 +24,7 @@ export const siteConfig = {
   name: 'Hacienda Sports Bar & Grill',
   tagline: 'Grill. Sport. Good company.',
   subtitle: "Nairobi's late-night charcoal cuts & craft pours",
+  url: 'https://hacienda-nine.vercel.app',
   address: 'Ngara Rd, Nairobi',
   city: 'Nairobi, Kenya',
   hours: 'Open 24 hours',
