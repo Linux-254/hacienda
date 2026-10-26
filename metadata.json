@@ -1,0 +1,8 @@
+{
+  "name": "Hacienda Sports Bar & Grill",
+  "description": "Nairobi's premier steakhouse, late-night grill room and sports bar on Ngara Road. Charcoal cuts, craft cocktails, live match screenings and digital QR table ordering.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

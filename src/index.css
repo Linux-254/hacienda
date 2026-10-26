@@ -1,0 +1,211 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --black: #0D0B09;
+    --espresso: #2B1A12;
+    --walnut: #4A2E1F;
+    --gold: #C9A24B;
+    --gold-light: #DFBA67;
+    --amber: #D9822B;
+    --cream: #F3E9D2;
+    --cream-muted: rgba(243, 233, 210, 0.65);
+    --hairline: rgba(201, 162, 75, 0.28);
+    --hairline-subtle: rgba(201, 162, 75, 0.14);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--black);
+    color: var(--cream);
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--black);
+    color: var(--cream);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: var(--gold);
+    color: var(--black);
+  }
+}
+
+/* Luxury Typography Utilities */
+.font-cinzel {
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.18em;
+}
+
+.font-playfair {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.font-cormorant {
+  font-family: 'Cormorant Garamond', Garamond, serif;
+}
+
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Structural & Luxury Hospitality Helpers */
+.container-hacienda {
+  width: min(1200px, calc(100% - 36px));
+  margin-inline: auto;
+}
+
+@media (max-width: 640px) {
+  .container-hacienda {
+    width: calc(100% - 28px);
+  }
+}
+
+.hairline {
+  height: 1px;
+  background-color: var(--hairline);
+}
+
+.hairline-subtle {
+  height: 1px;
+  background-color: var(--hairline-subtle);
+}
+
+.eyebrow {
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.button-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  background-color: var(--gold);
+  color: var(--black);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--gold);
+}
+
+.button-gold:hover {
+  background-color: var(--gold-light);
+  border-color: var(--gold-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(201, 162, 75, 0.2);
+}
+
+.button-gold:active {
+  transform: translateY(0);
+}
+
+.button-quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  border: 1px solid var(--hairline);
+  background-color: transparent;
+  color: var(--cream);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.button-quiet:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  transform: translateY(-2px);
+  background-color: rgba(201, 162, 75, 0.05);
+}
+
+.button-quiet:active {
+  transform: translateY(0);
+}
+
+.input-hacienda {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid rgba(201, 162, 75, 0.24);
+  background: rgba(13, 11, 9, 0.65);
+  padding: 0 16px;
+  color: var(--cream);
+  outline: none;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-hacienda:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201, 162, 75, 0.12);
+}
+
+/* Subtle Film Grain (4% opacity) */
+.site-grain::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Dish Pop-out floating visual */
+.dish-card-lift {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+}
+
+.dish-card-lift:hover {
+  transform: translateY(-8px) rotate(1.2deg);
+}
+
+/* Print Styles for QR Table Tents (A5 printable) */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #0D0B09 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .print-sheet {
+    display: block !important;
+    page-break-inside: avoid;
+    border: 1px solid #C9A24B !important;
+    background: #F3E9D2 !important;
+    color: #0D0B09 !important;
+  }
+}
+
+/* Accessibility: Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

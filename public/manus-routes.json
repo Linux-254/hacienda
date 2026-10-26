@@ -1,0 +1,12 @@
+{
+  "routes": [
+    { "path": "/", "title": "Hacienda Sports Bar & Grill — Home" },
+    { "path": "/menu", "title": "Full Grill & Bar Menu" },
+    { "path": "/order", "title": "Table & Takeaway Ordering" },
+    { "path": "/events", "title": "Match Days & Entertainment" },
+    { "path": "/about", "title": "Our Roots & Story" },
+    { "path": "/info", "title": "Location, Hours & Banda Reservations" },
+    { "path": "/qr", "title": "Printable QR Table Tents" },
+    { "path": "/order/confirmed", "title": "Order Confirmation" }
+  ]
+}
