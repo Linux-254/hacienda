@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Search, SlidersHorizontal, ArrowRight, Utensils, ShoppingBag, Truck } from 'lucide-react';
 import { formatKES, siteConfig, type MenuCategory, type MenuItem } from '@/config/site.config';
@@ -20,12 +20,24 @@ const categories: MenuCategory[] = [
 export function MenuPage() {
   const [searchParams] = useSearchParams();
   const initialSearch = searchParams.get('search') || '';
+  const tableParam = searchParams.get('table');
+  const modeParam = searchParams.get('mode') as OrderMode | null;
 
   const [activeCategory, setActiveCategory] = useState<MenuCategory>('Main grill');
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
 
-  const { count, total, diningMode, setDiningMode, table } = useCart();
+  const { count, total, diningMode, setDiningMode, table, setTable } = useCart();
+
+  // Sync table & dining mode from QR code or direct link
+  useEffect(() => {
+    if (tableParam) {
+      setTable(tableParam);
+      setDiningMode('table');
+    } else if (modeParam && ['table', 'pickup', 'delivery'].includes(modeParam)) {
+      setDiningMode(modeParam);
+    }
+  }, [tableParam, modeParam, setTable, setDiningMode]);
 
   const filteredItems = useMemo(() => {
     return siteConfig.menu.filter((item) => {

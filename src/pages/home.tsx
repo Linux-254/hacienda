@@ -7,6 +7,7 @@ import { SectionLabel } from '@/components/section-label';
 import { DishVisual } from '@/components/dish-visual';
 import { LiveGrill } from '@/components/live-grill';
 import { Reveal } from '@/components/reveal';
+import { LocationMapCard } from '@/components/location-map-card';
 
 export function HomePage() {
   const { scrollYProgress } = useScroll();
@@ -410,29 +411,19 @@ export function HomePage() {
       </section>
 
       {/* 7. Location & Final Call */}
-      <section className="py-20 bg-[#070504] text-center border-b border-[#C9A24B]/20">
-        <div className="container-hacienda max-w-2xl">
+      <section className="py-20 bg-[#070504] border-b border-[#C9A24B]/20">
+        <div className="container-hacienda max-w-4xl">
           <Reveal direction="up">
-            <span className="eyebrow">Find Your Seat</span>
-            <h2 className="font-playfair mt-3 text-3xl sm:text-4xl text-[#F3E9D2]">
-              Ngara Road, Nairobi
-            </h2>
-            <p className="mt-3 text-xs sm:text-sm text-[#F3E9D2]/65">
-              Always open. Sizzling coals, cool breezes, and good tables.
-            </p>
-            <div className="mt-8 flex justify-center gap-4">
-              <a
-                href={siteConfig.mapUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="button-gold"
-              >
-                Get Directions <MapPin size={14} className="ml-2" />
-              </a>
-              <Link to="/order" className="button-quiet">
-                Order Online
-              </Link>
+            <div className="text-center mb-10">
+              <span className="eyebrow">Find Your Seat</span>
+              <h2 className="font-playfair mt-3 text-3xl sm:text-4xl md:text-5xl text-[#F3E9D2]">
+                Ngara Road, Nairobi
+              </h2>
+              <p className="mx-auto mt-3 max-w-md text-xs sm:text-sm text-[#F3E9D2]/65">
+                Always open. Sizzling coals, cold drinks, big screens, and great company.
+              </p>
             </div>
+            <LocationMapCard />
           </Reveal>
         </div>
       </section>

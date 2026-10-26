@@ -9,6 +9,7 @@ export function ConfirmedPage() {
   const [orderData, setOrderData] = useState<{
     quote: Quote;
     details: CustomerDetails;
+    whatsappUrl?: string;
   } | null>(null);
 
   useEffect(() => {
@@ -47,6 +48,19 @@ export function ConfirmedPage() {
               staff. Charcoal cuts (Nyama Choma, ribs, whole fish) take between 25 and 35
               minutes to roast to tenderness.
             </p>
+
+            {orderData?.whatsappUrl && (
+              <div className="mt-5">
+                <a
+                  href={orderData.whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="button-gold inline-flex items-center gap-2 text-xs"
+                >
+                  <Phone size={14} /> Open Conversation in WhatsApp ({siteConfig.phone})
+                </a>
+              </div>
+            )}
 
             {/* Order Summary Card */}
             {orderData && (

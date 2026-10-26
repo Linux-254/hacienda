@@ -12,14 +12,16 @@ export function QRPage() {
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const PUBLIC_PREVIEW_URL = 'https://ais-pre-3fnonwn7je3erecw633mdg-620457192074.europe-west2.run.app';
+
   // Compute public base origin:
-  // If running in development inside ais-dev-..., automatically route to the public ais-pre-... domain
-  // so scanning with a phone camera requires ZERO Google login or permission prompts.
+  // If running in development (localhost) or inside ais-dev-..., automatically route to the public ais-pre-... domain
+  // so scanning with a physical phone camera requires ZERO Google login and never fails with localhost connection errors.
   const computeDefaultBase = () => {
-    if (typeof window === 'undefined') return 'https://hacienda.ke';
+    if (typeof window === 'undefined') return PUBLIC_PREVIEW_URL;
     const origin = window.location.origin;
-    if (origin.includes('ais-dev-')) {
-      return origin.replace('ais-dev-', 'ais-pre-');
+    if (origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('ais-dev-')) {
+      return PUBLIC_PREVIEW_URL;
     }
     return origin;
   };

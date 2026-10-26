@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MapPin, Clock, Phone, Car, CreditCard, Accessibility, Users, Send, CheckCircle2 } from 'lucide-react';
 import { siteConfig } from '@/config/site.config';
 import { SectionLabel } from '@/components/section-label';
+import { LocationMapCard } from '@/components/location-map-card';
 
 export function InfoPage() {
   const [reservation, setReservation] = useState({
@@ -52,6 +53,11 @@ export function InfoPage() {
 
       <section className="section-pad bg-[#0E0B09]">
         <div className="container-hacienda">
+          {/* Prominent Venue Map Preview on Card Layout */}
+          <div className="mb-14">
+            <LocationMapCard />
+          </div>
+
           <div className="grid gap-12 lg:grid-cols-2">
             {/* Left: Key Venue Details */}
             <div className="space-y-8">
@@ -141,118 +147,153 @@ export function InfoPage() {
                 Book your private thatched banda in advance.
               </p>
 
-              <form onSubmit={handleReservation} className="mt-6 space-y-4">
-                <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#C9A24B]">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={reservation.name}
-                    onChange={(e) => setReservation({ ...reservation, name: e.target.value })}
-                    placeholder="e.g. David Mwangi"
-                    className="input-hacienda mt-1.5"
-                  />
+              {submitted ? (
+                <div className="mt-6 border border-[#C9A24B]/40 bg-[#1F1510] p-6 text-center">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-[#C9A24B] bg-[#2B1A12] text-[#C9A24B]">
+                    <CheckCircle2 size={24} />
+                  </div>
+                  <h3 className="font-playfair mt-3 text-xl text-[#F3E9D2]">
+                    Reservation Sent to Front Desk
+                  </h3>
+                  <p className="mt-2 text-xs leading-relaxed text-[#F3E9D2]/70">
+                    Your request for <strong>{reservation.date} at {reservation.time}</strong> ({reservation.guests} guests, {reservation.bandaPreference}) has been dispatched to WhatsApp desk at <strong>{siteConfig.phone}</strong>.
+                  </p>
+                  <p className="mt-2 text-[11px] text-[#C9A24B]">
+                    Our staff will confirm banda readiness shortly.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSubmitted(false);
+                      setReservation({
+                        name: '',
+                        phone: '',
+                        date: '',
+                        time: '',
+                        guests: '4',
+                        bandaPreference: 'Private Banda',
+                        notes: '',
+                      });
+                    }}
+                    className="button-quiet mt-5 w-full text-xs"
+                  >
+                    Make Another Booking
+                  </button>
                 </div>
-
-                <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#C9A24B]">
-                    Phone Number *
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={reservation.phone}
-                    onChange={(e) => setReservation({ ...reservation, phone: e.target.value })}
-                    placeholder="07XX XXX XXX"
-                    className="input-hacienda mt-1.5"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+              ) : (
+                <form onSubmit={handleReservation} className="mt-6 space-y-4">
                   <div>
                     <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#C9A24B]">
-                      Date *
+                      Full Name *
                     </label>
                     <input
-                      type="date"
+                      type="text"
                       required
-                      value={reservation.date}
-                      onChange={(e) => setReservation({ ...reservation, date: e.target.value })}
-                      className="input-hacienda mt-1.5 text-xs"
+                      value={reservation.name}
+                      onChange={(e) => setReservation({ ...reservation, name: e.target.value })}
+                      placeholder="e.g. David Mwangi"
+                      className="input-hacienda mt-1.5"
                     />
                   </div>
+
                   <div>
                     <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#C9A24B]">
-                      Time *
+                      Phone Number *
                     </label>
                     <input
-                      type="time"
+                      type="tel"
                       required
-                      value={reservation.time}
-                      onChange={(e) => setReservation({ ...reservation, time: e.target.value })}
-                      className="input-hacienda mt-1.5 text-xs"
+                      value={reservation.phone}
+                      onChange={(e) => setReservation({ ...reservation, phone: e.target.value })}
+                      placeholder="07XX XXX XXX"
+                      className="input-hacienda mt-1.5"
                     />
                   </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#C9A24B]">
-                      Party Size
-                    </label>
-                    <select
-                      value={reservation.guests}
-                      onChange={(e) => setReservation({ ...reservation, guests: e.target.value })}
-                      className="input-hacienda mt-1.5 text-xs"
-                    >
-                      <option value="2">2 Guests</option>
-                      <option value="4">4 Guests</option>
-                      <option value="6">6 Guests</option>
-                      <option value="8">8 Guests</option>
-                      <option value="12">12 Guests</option>
-                      <option value="16">16+ Guests (Full Banda)</option>
-                    </select>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#C9A24B]">
+                        Date *
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={reservation.date}
+                        onChange={(e) => setReservation({ ...reservation, date: e.target.value })}
+                        className="input-hacienda mt-1.5 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#C9A24B]">
+                        Time *
+                      </label>
+                      <input
+                        type="time"
+                        required
+                        value={reservation.time}
+                        onChange={(e) => setReservation({ ...reservation, time: e.target.value })}
+                        className="input-hacienda mt-1.5 text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#C9A24B]">
+                        Party Size
+                      </label>
+                      <select
+                        value={reservation.guests}
+                        onChange={(e) => setReservation({ ...reservation, guests: e.target.value })}
+                        className="input-hacienda mt-1.5 text-xs"
+                      >
+                        <option value="2">2 Guests</option>
+                        <option value="4">4 Guests</option>
+                        <option value="6">6 Guests</option>
+                        <option value="8">8 Guests</option>
+                        <option value="12">12 Guests</option>
+                        <option value="16">16+ Guests (Full Banda)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#C9A24B]">
+                        Seating Area
+                      </label>
+                      <select
+                        value={reservation.bandaPreference}
+                        onChange={(e) => setReservation({ ...reservation, bandaPreference: e.target.value })}
+                        className="input-hacienda mt-1.5 text-xs"
+                      >
+                        <option value="Private Banda">Private Garden Banda</option>
+                        <option value="Sports Bar Hall">Main Sports Lounge</option>
+                        <option value="Open Air Patio">Open Air Patio</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#C9A24B]">
-                      Seating Area
+                      Special Requests or Occasion
                     </label>
-                    <select
-                      value={reservation.bandaPreference}
-                      onChange={(e) => setReservation({ ...reservation, bandaPreference: e.target.value })}
-                      className="input-hacienda mt-1.5 text-xs"
-                    >
-                      <option value="Private Banda">Private Garden Banda</option>
-                      <option value="Sports Bar Hall">Main Sports Lounge</option>
-                      <option value="Open Air Patio">Open Air Patio</option>
-                    </select>
+                    <textarea
+                      rows={2}
+                      value={reservation.notes}
+                      onChange={(e) => setReservation({ ...reservation, notes: e.target.value })}
+                      placeholder="e.g. Watching the Manchester derby, require screen view"
+                      className="input-hacienda mt-1.5 min-h-[64px] py-2 text-xs"
+                    />
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#C9A24B]">
-                    Special Requests or Occasion
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={reservation.notes}
-                    onChange={(e) => setReservation({ ...reservation, notes: e.target.value })}
-                    placeholder="e.g. Watching the Manchester derby, require screen view"
-                    className="input-hacienda mt-1.5 min-h-[64px] py-2 text-xs"
-                  />
-                </div>
+                  <button type="submit" className="button-gold mt-6 w-full text-xs">
+                    <Send size={14} className="mr-2" /> Send Reservation Request via WhatsApp
+                  </button>
 
-                <button type="submit" className="button-gold mt-6 w-full text-xs">
-                  <Send size={14} className="mr-2" /> Send Reservation Request via WhatsApp
-                </button>
-
-                <p className="mt-3 text-[10px] text-center text-[#F3E9D2]/50">
-                  Reservations are confirmed promptly by our front-of-house team.
-                </p>
-              </form>
+                  <p className="mt-3 text-[10px] text-center text-[#F3E9D2]/50">
+                    Reservations are confirmed promptly by our front-of-house team.
+                  </p>
+                </form>
+              )}
             </div>
           </div>
         </div>

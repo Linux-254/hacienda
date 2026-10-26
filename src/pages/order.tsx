@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowRight,
   Minus,
@@ -25,6 +25,10 @@ import { SectionLabel } from '@/components/section-label';
 
 export function OrderPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const tableParam = searchParams.get('table');
+  const modeParam = searchParams.get('mode') as OrderMode | null;
+
   const { lines, total, count, decrement, addItem, remove, clear, table, setTable, diningMode, setDiningMode } = useCart();
 
   const [status, setStatus] = useState<'idle' | 'verifying' | 'sending' | 'error'>('idle');
@@ -43,14 +47,26 @@ export function OrderPage() {
 
   const [details, setDetails] = useState<CustomerDetails>({
     name: '',
-    phone: '0708 808 168',
+    phone: '',
     mode: diningMode || 'table',
-    table: table || '',
+    table: tableParam || table || '',
     address: '',
     notes: '',
     paymentMethod: 'mpesa',
     paymentStatus: 'unpaid',
   });
+
+  // Sync table & mode parameters from URL or context
+  useEffect(() => {
+    if (tableParam) {
+      setTable(tableParam);
+      setDiningMode('table');
+      setDetails((prev) => ({ ...prev, table: tableParam, mode: 'table' }));
+    } else if (modeParam && ['table', 'pickup', 'delivery'].includes(modeParam)) {
+      setDiningMode(modeParam);
+      setDetails((prev) => ({ ...prev, mode: modeParam }));
+    }
+  }, [tableParam, modeParam, setTable, setDiningMode]);
 
   useEffect(() => {
     setDetails((prev) => ({
@@ -251,15 +267,24 @@ export function OrderPage() {
         JSON.stringify({
           quote: authoritativeQuote,
           details: finalDetails,
+          whatsappUrl,
         })
       );
 
       // Clear local cart
       clear();
 
-      // Open WhatsApp & redirect to confirmation
-      window.location.href = whatsappUrl;
+      // Navigate to confirmation page
       navigate('/order/confirmed');
+
+      // Smoothly trigger WhatsApp client
+      setTimeout(() => {
+        try {
+          window.location.href = whatsappUrl;
+        } catch {
+          // Handled on confirmed screen
+        }
+      }, 350);
     } catch (err: unknown) {
       setStatus('error');
       const message = err instanceof Error ? err.message : 'Unable to dispatch order. Please ask staff directly.';
